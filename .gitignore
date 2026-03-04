@@ -1,2 +1,4 @@
 data/raw/meteorite_landings.csv
-output
+output/predicted_vs_actual.png
+output/regression_by_class.png
+.Rproj.user
