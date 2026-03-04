@@ -1,4 +1,13 @@
 data/raw/meteorite_landings.csv
-output/predicted_vs_actual.png
-output/regression_by_class.png
-.Rproj.user
+output/*
+!output/.gitkeep
+.Rhistory
+.RData
+.Ruserdata
+.Rproj.user/
+renv/library/
+renv/python/
+renv/staging/
+renv/cache/
+renv/.gitignore
+.DS_Store
