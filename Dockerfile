@@ -24,7 +24,7 @@ RUN R -e "install.packages('renv', repos='https://cloud.r-project.org/')"
 RUN R -e "renv::restore()"
 
 RUN mkdir -p output && chown rstudio:rstudio output
-RUN curl -L "<https://data.nasa.gov/docs/legacy/meteorite_landings/Meteorite_Landings.csv>" -o data/raw/meteorite_landings.csv && \
+RUN curl -L "https://data.nasa.gov/docs/legacy/meteorite_landings/Meteorite_Landings.csv" -o data/raw/meteorite_landings.csv && \
     chown rstudio:rstudio data/raw/meteorite_landings.csv
 COPY --chown=rstudio:rstudio src/01_meteor-size-analysis.ipynb src/01_meteor-size-analysis.ipynb
 COPY --chown=rstudio:rstudio src/02_meteor-size-analysis.R src/02_meteor-size-analysis.R
