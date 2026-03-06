@@ -5,9 +5,9 @@ library(broom)
 
 # Read in data
 # getwd()
-# file_url <- "https://data.nasa.gov/docs/legacy/meteorite_landings/Meteorite_Landings.csv"
-# dest_file <- "../data/raw/meteorite_landings.csv"
-# download.file(file_url, dest_file, method = "auto")
+file_url <- "https://data.nasa.gov/docs/legacy/meteorite_landings/Meteorite_Landings.csv"
+dest_file <- "data/raw/meteorite_landings.csv"
+download.file(file_url, dest_file, method = "auto")
 meteors <- read.csv("data/raw/meteorite_landings.csv")
 # head(meteors)
 
