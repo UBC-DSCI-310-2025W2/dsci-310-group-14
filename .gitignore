@@ -11,3 +11,4 @@ renv/staging/
 renv/cache/
 renv/.gitignore
 .DS_Store
+.ipynb_checkpoints
