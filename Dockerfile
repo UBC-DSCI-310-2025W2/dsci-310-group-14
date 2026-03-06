@@ -13,9 +13,10 @@ RUN apt-get update && apt-get install -y \
     libfribidi-dev \
     libtiff5-dev \
     libjpeg-dev \
+    curl \
     libzmq3-dev \
     && rm -rf /var/lib/apt/lists/*
-    
+
 WORKDIR /home/rstudio
 
 COPY --chown=rstudio:rstudio renv/activate.R renv/activate.R
