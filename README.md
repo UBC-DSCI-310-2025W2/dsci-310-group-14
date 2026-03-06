@@ -9,12 +9,14 @@ curl -o "https://data.nasa.gov/docs/legacy/meteorite_landings/Meteorite_Landings
 # Meteorite Landings Analysis
 
 ## Contributors
+
 - Aryan Taneja (28975563)
 - Rishabh ()
 - Allison Tao ()
 - Eva Ma ()
 
 ## Project Summary
+
 This project analyzes the **NASA Meteorite Landings dataset** to investigate how meteorite mass varies over time, location, and meteorite classification. Using data cleaning, exploratory visualization, and linear regression modeling in R, the project examines whether temporal trends and meteorite class interactions help explain variation in meteorite mass.
 
 The dataset was obtained from NASA’s public meteorite database and includes variables such as meteorite mass, year of landing or discovery, geographic coordinates, meteorite classification, and fall status (Fell vs Found).
