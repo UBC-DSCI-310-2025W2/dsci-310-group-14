@@ -1,2 +1,13 @@
 data/raw/meteorite_landings.csv
-output
+output/*
+!output/.gitkeep
+.Rhistory
+.RData
+.Ruserdata
+.Rproj.user/
+renv/library/
+renv/python/
+renv/staging/
+renv/cache/
+renv/.gitignore
+.DS_Store
