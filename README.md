@@ -12,8 +12,8 @@ curl -o "https://data.nasa.gov/docs/legacy/meteorite_landings/Meteorite_Landings
 
 - Aryan Taneja (28975563)
 - Rishabh ()
-- Allison Tao ()
-- Eva Ma ()
+- Allison Tao (41292483)
+- Eva Ma (36961662)
 
 ## Project Summary
 
