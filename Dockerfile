@@ -13,6 +13,7 @@ RUN apt-get update && apt-get install -y \
     libfribidi-dev \
     libtiff5-dev \
     libjpeg-dev \
+    libzmq3-dev \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /home/rstudio
@@ -24,7 +25,5 @@ RUN R -e "install.packages('renv', repos='https://cloud.r-project.org/')"
 RUN R -e "renv::restore()"
 
 RUN mkdir -p output && chown rstudio:rstudio output
-COPY --chown=rstudio:rstudio data/raw/meteorite_landings.csv data/raw/meteorite_landings.csv
-COPY --chown=rstudio:rstudio src/01_meteor-size-analysis.ipynb src/01_meteor-size-analysis.ipynb
-COPY --chown=rstudio:rstudio src/02_meteor-size-analysis.R src/02_meteor-size-analysis.R
+COPY --chown=rstudio:rstudio src/meteor-analysis.ipynb src/meteor-analysis.ipynb
 COPY --chown=rstudio:rstudio README.md README.md
