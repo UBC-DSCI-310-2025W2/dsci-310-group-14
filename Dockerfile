@@ -25,6 +25,5 @@ RUN R -e "install.packages('renv', repos='https://cloud.r-project.org/')"
 RUN R -e "renv::restore()"
 
 RUN mkdir -p output && chown rstudio:rstudio output
-COPY --chown=rstudio:rstudio src/01_meteor-size-analysis.ipynb src/01_meteor-size-analysis.ipynb
-COPY --chown=rstudio:rstudio src/02_meteor-size-analysis.R src/02_meteor-size-analysis.R
+COPY --chown=rstudio:rstudio src/meteor-analysis.ipynb src/meteor-analysis.ipynb
 COPY --chown=rstudio:rstudio README.md README.md
