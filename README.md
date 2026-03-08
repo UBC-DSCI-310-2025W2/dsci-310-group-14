@@ -11,7 +11,7 @@ curl -o "https://data.nasa.gov/docs/legacy/meteorite_landings/Meteorite_Landings
 ## Contributors
 
 - Aryan Taneja (28975563)
-- Rishabh ()
+- Rishabh (71497275)
 - Allison Tao (41292483)
 - Eva Ma (36961662)
 
