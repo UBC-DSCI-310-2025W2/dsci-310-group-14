@@ -26,4 +26,5 @@ RUN R -e "renv::restore()"
 
 RUN mkdir -p output && chown rstudio:rstudio output
 COPY --chown=rstudio:rstudio src/meteor-analysis.ipynb src/meteor-analysis.ipynb
+COPY --chown=rstudio:rstudio data/raw/meteorite_landings.csv data/raw/meteorite_landings.csv
 COPY --chown=rstudio:rstudio README.md README.md

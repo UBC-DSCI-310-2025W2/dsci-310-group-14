@@ -1,4 +1,4 @@
-data/raw/meteorite_landings.csv
+# data/raw/meteorite_landings.csv
 output/*
 !output/.gitkeep
 .Rhistory
