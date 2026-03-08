@@ -43,7 +43,7 @@ $$
    - **Regression lines by meteorite class over time**
    - **Predicted vs. actual log-mass values**
 
-The analysis is implemented in **R** and can be run locally or through **Docker**.
+The analysis is implemented in **R** and can be run locally or through **Docker**.p
 
 # How to Run the Analysis
 
@@ -162,3 +162,23 @@ output/
 └── predicted_vs_actual.png
 ```
 
+## Dependencies
+
+This project is written in **R** and uses **renv** to manage package dependencies.  
+All required packages are listed in the `renv.lock` file and can be installed by running:
+
+renv::restore()
+
+The main R packages used in this analysis include:
+
+- ggplot2 (data visualization)
+- dplyr (data manipulation)
+- tidyr (data tidying)
+- readr (data import)
+- broom (model output tidying)
+- renv (reproducible dependency management)
+
+To run the containerized workflow, the following software is also required:
+
+- Docker
+- rocker/rstudio base image
