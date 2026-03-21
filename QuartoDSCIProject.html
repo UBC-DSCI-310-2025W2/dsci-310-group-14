@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.26">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Aryan Taneja (28975563)">
+<meta name="author" content="Rishabh Mathur (71497275)">
+<meta name="author" content="Allison Tao (41292483)">
+<meta name="author" content="Eva Ma (36961662)">
+
+<title>Predicting Meteorite Mass Using Temporal, Geographic, and Classification Features</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="QuartoDSCIProject_files/libs/clipboard/clipboard.min.js"></script>
+<script src="QuartoDSCIProject_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="QuartoDSCIProject_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="QuartoDSCIProject_files/libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="QuartoDSCIProject_files/libs/quarto-html/popper.min.js"></script>
+<script src="QuartoDSCIProject_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="QuartoDSCIProject_files/libs/quarto-html/anchor.min.js"></script>
+<link href="QuartoDSCIProject_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="QuartoDSCIProject_files/libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="QuartoDSCIProject_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="QuartoDSCIProject_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="QuartoDSCIProject_files/libs/bootstrap/bootstrap-d6a003b94517c951b2d65075d42fb01b.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#summary" id="toc-summary" class="nav-link active" data-scroll-target="#summary"><span class="header-section-number">1</span> Summary</a></li>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link" data-scroll-target="#introduction"><span class="header-section-number">2</span> Introduction</a>
+  <ul class="collapse">
+  <li><a href="#predictive-question" id="toc-predictive-question" class="nav-link" data-scroll-target="#predictive-question"><span class="header-section-number">2.1</span> Predictive Question</a></li>
+  <li><a href="#dataset-description" id="toc-dataset-description" class="nav-link" data-scroll-target="#dataset-description"><span class="header-section-number">2.2</span> Dataset Description</a></li>
+  </ul></li>
+  <li><a href="#methods" id="toc-methods" class="nav-link" data-scroll-target="#methods"><span class="header-section-number">3</span> Methods</a>
+  <ul class="collapse">
+  <li><a href="#data-loading-and-cleaning" id="toc-data-loading-and-cleaning" class="nav-link" data-scroll-target="#data-loading-and-cleaning"><span class="header-section-number">3.1</span> Data Loading and Cleaning</a></li>
+  <li><a href="#train-test-split" id="toc-train-test-split" class="nav-link" data-scroll-target="#train-test-split"><span class="header-section-number">3.2</span> Train-Test Split</a></li>
+  <li><a href="#regression-model" id="toc-regression-model" class="nav-link" data-scroll-target="#regression-model"><span class="header-section-number">3.3</span> Regression Model</a></li>
+  </ul></li>
+  <li><a href="#results" id="toc-results" class="nav-link" data-scroll-target="#results"><span class="header-section-number">4</span> Results</a>
+  <ul class="collapse">
+  <li><a href="#regression-lines-by-meteorite-class" id="toc-regression-lines-by-meteorite-class" class="nav-link" data-scroll-target="#regression-lines-by-meteorite-class"><span class="header-section-number">4.1</span> Regression Lines by Meteorite Class</a></li>
+  <li><a href="#predictive-performance" id="toc-predictive-performance" class="nav-link" data-scroll-target="#predictive-performance"><span class="header-section-number">4.2</span> Predictive Performance</a></li>
+  </ul></li>
+  <li><a href="#discussion" id="toc-discussion" class="nav-link" data-scroll-target="#discussion"><span class="header-section-number">5</span> Discussion</a>
+  <ul class="collapse">
+  <li><a href="#summary-of-findings" id="toc-summary-of-findings" class="nav-link" data-scroll-target="#summary-of-findings"><span class="header-section-number">5.1</span> Summary of Findings</a></li>
+  <li><a href="#were-these-findings-expected" id="toc-were-these-findings-expected" class="nav-link" data-scroll-target="#were-these-findings-expected"><span class="header-section-number">5.2</span> Were These Findings Expected?</a></li>
+  <li><a href="#potential-impact-of-findings" id="toc-potential-impact-of-findings" class="nav-link" data-scroll-target="#potential-impact-of-findings"><span class="header-section-number">5.3</span> Potential Impact of Findings</a></li>
+  <li><a href="#limitations" id="toc-limitations" class="nav-link" data-scroll-target="#limitations"><span class="header-section-number">5.4</span> Limitations</a></li>
+  <li><a href="#future-work" id="toc-future-work" class="nav-link" data-scroll-target="#future-work"><span class="header-section-number">5.5</span> Future Work</a></li>
+  </ul></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references"><span class="header-section-number">6</span> References</a></li>
+  </ul>
+</nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Predicting Meteorite Mass Using Temporal, Geographic, and Classification Features</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Authors</div>
+    <div class="quarto-title-meta-contents">
+             <p>Aryan Taneja (28975563) </p>
+             <p>Rishabh Mathur (71497275) </p>
+             <p>Allison Tao (41292483) </p>
+             <p>Eva Ma (36961662) </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="summary" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> Summary</h1>
+<p>This project delves into the NASA Meteorite Landings dataset to gain insight into how meteorite mass varies over time, location, and meteorite classification. Meteorite mass is a fundamental characteristic of a meteorite, and understanding what influences its variation can shed valuable light on the nature of meteorite populations <span class="citation" data-cites="nasa_facts">(<a href="#ref-nasa_facts" role="doc-biblioref">NASA 2024</a>)</span>. The project applies data cleaning, exploratory visualization, and linear regression modelling to examine whether temporal trends, geographic patterns, and meteorite class interactions can explain the differences in meteorite mass. The model captures general trends in the data but shows limited accuracy for extreme values, suggesting that additional predictors may be required for improved performance.</p>
+</section>
+<section id="introduction" class="level1" data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> Introduction</h1>
+<p>A meteorite is defined as a meteoroid that survives a fall through the atmosphere and hits land <span class="citation" data-cites="nasa_facts">(<a href="#ref-nasa_facts" role="doc-biblioref">NASA 2024</a>)</span>. Meteoroids are stagnant rocks in space, with sizes ranging from a speck of dust to that of an asteroid. Most meteoroids are chunks or debris of larger bodies that have been destructed; these can be rocky, metallic, or a combination of both <span class="citation" data-cites="nasa_facts">(<a href="#ref-nasa_facts" role="doc-biblioref">NASA 2024</a>)</span>. Meteorites that land on Earth are among the oldest and most diverse materials from the formation of our solar system. Studying meteorite landings allows scientists to discover and reconstruct key aspects of our planetary history, including the age and composition of planets and the extent to which materials were changed by previous impacts <span class="citation" data-cites="nasa_facts">(<a href="#ref-nasa_facts" role="doc-biblioref">NASA 2024</a>)</span>.</p>
+<p>Despite their historical and scientific relevance, meteorite landings are affected by a range of geographic aspects. Factors such as where a meteorite lands, when it is discovered, and how it is classified play a crucial role in determining how accurately they represent the true distribution of meteorites. In particular, meteorite mass is a fundamental characteristic that can be used to describe and compare meteorite samples across different classes and discovery conditions; it can be used to observe how it fluctuates against time, location, and meteorite class. This project leverages NASA’s Meteorite Landings dataset to explore these patterns. By building a linear regression model to predict the logarithm of meteorite mass based on year, class, location, and whether the meteorite was found or observed falling, this project aims to contribute to a deeper understanding of both the physical nature of meteorites and discovery patterns that shape the history of meteorites.</p>
+<section id="predictive-question" class="level2" data-number="2.1">
+<h2 data-number="2.1" class="anchored" data-anchor-id="predictive-question"><span class="header-section-number">2.1</span> Predictive Question</h2>
+<p>Can meteorite mass be predicted using year, meteorite classification, geographic location, and fall status?</p>
+</section>
+<section id="dataset-description" class="level2" data-number="2.2">
+<h2 data-number="2.2" class="anchored" data-anchor-id="dataset-description"><span class="header-section-number">2.2</span> Dataset Description</h2>
+<p>This analysis uses the NASA Meteorite Landings dataset <span class="citation" data-cites="nasa_meteorite">(<a href="#ref-nasa_meteorite" role="doc-biblioref">NASA n.d.</a>)</span>, which contains 24804 cleaned observations of meteorite landings and discoveries around the world spanning 860 to 2013. The variables used in this analysis are described in <a href="#tbl-variables" class="quarto-xref">Table&nbsp;1</a>.</p>
+<div class="cell">
+<div id="tbl-variables" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-variables-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;1: Variables used from the NASA Meteorite Landings dataset.
+</figcaption>
+<div aria-describedby="tbl-variables-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="do-not-create-environment cell caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 13%">
+<col style="width: 86%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Variable</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>mass (g)</code></td>
+<td style="text-align: left;">Mass of the meteorite sample (grams)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>year</code></td>
+<td style="text-align: left;">Year the meteorite was observed or found</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>reclat</code></td>
+<td style="text-align: left;">Latitude of the landing or discovery location</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>reclong</code></td>
+<td style="text-align: left;">Longitude of the landing or discovery location</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>recclass</code></td>
+<td style="text-align: left;">Meteorite classification type</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>fall</code></td>
+<td style="text-align: left;">Whether the meteorite was observed <em>Fell</em> or discovered later (<em>Found</em>)</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+</section>
+</section>
+<section id="methods" class="level1" data-number="3">
+<h1 data-number="3"><span class="header-section-number">3</span> Methods</h1>
+<section id="data-loading-and-cleaning" class="level2" data-number="3.1">
+<h2 data-number="3.1" class="anchored" data-anchor-id="data-loading-and-cleaning"><span class="header-section-number">3.1</span> Data Loading and Cleaning</h2>
+<p>The NASA Meteorite Landings dataset was loaded and the following preprocessing steps were applied:</p>
+<ol type="1">
+<li>Observations with missing values in <code>mass</code>, <code>year</code>, <code>reclat</code>, <code>reclong</code>, <code>fall</code>, and <code>recclass</code> were removed</li>
+<li>Variable types were standardized:</li>
+</ol>
+<ul>
+<li><code>mass</code>, <code>year</code>, <code>reclat</code>, and <code>reclong</code> were converted to numeric</li>
+<li><code>fall</code> and <code>recclass</code> were converted to categorical factors</li>
+</ul>
+<ol start="3" type="1">
+<li>Observations with non-positive mass values were removed</li>
+<li>Because meteorite mass is highly right-skewed, a base-10 logarithmic transformation was applied to stabilize variance and make linear regression more appropriate</li>
+<li>To avoid sparse categories, only the 5 most frequent meteorite classifications were retained: L6, H5, H6, H4, L5</li>
+</ol>
+<p>After cleaning, the dataset contains 24804 observations.</p>
+</section>
+<section id="train-test-split" class="level2" data-number="3.2">
+<h2 data-number="3.2" class="anchored" data-anchor-id="train-test-split"><span class="header-section-number">3.2</span> Train-Test Split</h2>
+<p>The cleaned dataset was randomly split into 19843 training observations (80%) and 4961 testing observations (20%). A fixed random seed of 2026 was used to ensure reproducibility.</p>
+<p>The training set was used to fit the regression model, and the testing set was used to evaluate predictive performance.</p>
+</section>
+<section id="regression-model" class="level2" data-number="3.3">
+<h2 data-number="3.3" class="anchored" data-anchor-id="regression-model"><span class="header-section-number">3.3</span> Regression Model</h2>
+<p>A Gaussian linear regression model was fit on the training data using year, meteorite classification, longitude, latitude, and fall status, with an interaction term between year and classification:</p>
+<p><span class="math display">\[\log_{10}(\text{mass}) \sim \text{year} \times \text{recclass} + \text{reclat} + \text{reclong} + \text{fall}\]</span></p>
+<p>The interaction between year and meteorite class allows the relationship between time and meteorite mass to vary across classification types. The first six estimated model coefficients are shown in <a href="#tbl-model" class="quarto-xref">Table&nbsp;2</a>.</p>
+<div class="cell">
+<div id="tbl-model" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-model-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;2: First six estimated coefficients from the fitted Gaussian linear regression model.
+</figcaption>
+<div aria-describedby="tbl-model-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="do-not-create-environment cell caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Term</th>
+<th style="text-align: right;">Estimate</th>
+<th style="text-align: right;">Std. Error</th>
+<th style="text-align: right;">Statistic</th>
+<th style="text-align: right;">P-value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">(Intercept)</td>
+<td style="text-align: right;">26.7994</td>
+<td style="text-align: right;">1.9296</td>
+<td style="text-align: right;">13.8885</td>
+<td style="text-align: right;">0.0000</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">year</td>
+<td style="text-align: right;">-0.0123</td>
+<td style="text-align: right;">0.0010</td>
+<td style="text-align: right;">-12.6234</td>
+<td style="text-align: right;">0.0000</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">recclassH5</td>
+<td style="text-align: right;">-8.1670</td>
+<td style="text-align: right;">2.2716</td>
+<td style="text-align: right;">-3.5953</td>
+<td style="text-align: right;">0.0003</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">recclassH6</td>
+<td style="text-align: right;">-10.8351</td>
+<td style="text-align: right;">2.4055</td>
+<td style="text-align: right;">-4.5043</td>
+<td style="text-align: right;">0.0000</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">recclassL5</td>
+<td style="text-align: right;">-0.9235</td>
+<td style="text-align: right;">2.6686</td>
+<td style="text-align: right;">-0.3460</td>
+<td style="text-align: right;">0.7293</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">recclassL6</td>
+<td style="text-align: right;">-11.4928</td>
+<td style="text-align: right;">2.0840</td>
+<td style="text-align: right;">-5.5148</td>
+<td style="text-align: right;">0.0000</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+</section>
+</section>
+<section id="results" class="level1" data-number="4">
+<h1 data-number="4"><span class="header-section-number">4</span> Results</h1>
+<section id="regression-lines-by-meteorite-class" class="level2" data-number="4.1">
+<h2 data-number="4.1" class="anchored" data-anchor-id="regression-lines-by-meteorite-class"><span class="header-section-number">4.1</span> Regression Lines by Meteorite Class</h2>
+<p><a href="#fig-regression" class="quarto-xref">Figure&nbsp;1</a> shows log10(mass) versus year for the 5 most common meteorite classes, with regression lines observed for each class.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-regression" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-regression-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="QuartoDSCIProject_files/figure-html/fig-regression-1.png" class="img-fluid figure-img" width="768">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-regression-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Log10(mass) versus year for the five most common meteorite classes. Regression lines show predicted trends for each class from the fitted linear regression model.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p><a href="#fig-regression" class="quarto-xref">Figure&nbsp;1</a> reveals a downward trend in predicted log10(mass) over time across all 5 classes. All classes exhibit decreasing predicted mass over time, with slopes differing slightly across classes. This reflects the interaction between year and meteorite classification included in the model. Recent years show a greater density of smaller-mass meteorites, which is consistent with improvements in detection technology over time that allow smaller meteorites to be recorded in more recent periods.</p>
+</section>
+<section id="predictive-performance" class="level2" data-number="4.2">
+<h2 data-number="4.2" class="anchored" data-anchor-id="predictive-performance"><span class="header-section-number">4.2</span> Predictive Performance</h2>
+<p><a href="#fig-predicted" class="quarto-xref">Figure&nbsp;2</a> shows a scatterplot comparing predicted and actual log10(mass) values on the test set.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-predicted" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-predicted-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="QuartoDSCIProject_files/figure-html/fig-predicted-1.png" class="img-fluid figure-img" width="768">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-predicted-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: Predicted versus actual log10(mass) values. The red line represents perfect prediction; points falling on this line indicate exact agreement between predicted and observed values.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>As shown in <a href="#fig-predicted" class="quarto-xref">Figure&nbsp;2</a>, predictions are more concentrated than actual values, particularly for extreme masses, indicating that the model captures general trends but does not fully account for high-variability outliers. Larger meteorites exhibit greater prediction variability.</p>
+<p>Temporal, geographic, and compositional characteristics all contribute meaningfully to explaining variation in meteorite mass, though the available predictors alone are not sufficient for highly accurate prediction of extreme values.</p>
+</section>
+</section>
+<section id="discussion" class="level1" data-number="5">
+<h1 data-number="5"><span class="header-section-number">5</span> Discussion</h1>
+<p>The analysis suggests that meteorite mass can be partially predicted using year, meteorite classification, geographic location, and fall status, though with moderate accuracy. The model captures meaningful systematic patterns in the data, but as shown in <a href="#fig-predicted" class="quarto-xref">Figure&nbsp;2</a>, predictions are concentrated within a narrow range and struggle to account for extreme mass values, indicating that these predictors alone are not sufficient for highly accurate prediction.</p>
+<p>This study explored how characteristics of meteorite landings relate to meteorite mass. Using the NASA Meteorite Landings dataset, we built a linear regression model predicting the logarithm of meteorite mass (<code>log_mass</code>) based on the year of discovery, meteorite class (<code>recclass</code>), geographic coordinates (<code>latitude</code>, and <code>longitude</code>), and whether the meteorite was observed fallling or found later (<code>fall</code>) <span class="citation" data-cites="nasa_meteorite">(<a href="#ref-nasa_meteorite" role="doc-biblioref">NASA n.d.</a>)</span>. Interaction terms between year and meteorite class were also included to capture class-specific temporal trends. The dataset used in this analysis comes from the NASA Meteorite Landings database, which compiles meteorite discovery records including mass, location, classification, and year of fall or discovery.</p>
+<section id="summary-of-findings" class="level2" data-number="5.1">
+<h2 data-number="5.1" class="anchored" data-anchor-id="summary-of-findings"><span class="header-section-number">5.1</span> Summary of Findings</h2>
+<p>Several meaningful patterns emerged from the regression model. Most notably, year showed a statistically significant negative relationship with meteorite mass; the negative coefficient for year suggests that more recently discovered meteorites tend to have smaller masses compared to earlier discoveries <span class="citation" data-cites="nasa_facts">(<a href="#ref-nasa_facts" role="doc-biblioref">NASA 2024</a>)</span>. This downward trend is clearly visible across all five classes in <a href="#fig-regression" class="quarto-xref">Figure&nbsp;1</a>. A plausible explanation is that improvements in detection technology and scientific monitoring have made it easier to detect smaller meteorites that would previously have gone unnoticed. As meteorite observation networks and scientific cataloguing efforts have expanded over time, the number of recorded meteorites has increased signficantly.</p>
+<p>Meteorite class also plays an important role in determining mass. Several classes, including H5 and H6, showed statistically significant differences in predicted mass relative to the reference class, reflecting differences in mineral composition, metal content, and thermal history <span class="citation" data-cites="nhm_meteorites">(<a href="#ref-nhm_meteorites" role="doc-biblioref">Natural History Museum n.d.</a>)</span>. These physical differences influence how meteorites form, fragment, and survive atmospheric entry. For example, different chondrite groups originate from different parent bodies in the asteroid belt and may therefore exhibit variation in density and structural composition <span class="citation" data-cites="lauretta2008">(<a href="#ref-lauretta2008" role="doc-biblioref">Lauretta and McSween 2008</a>)</span>.</p>
+<p>As shown in <a href="#fig-regression" class="quarto-xref">Figure&nbsp;1</a>, the interaction terms between year and meteorite class produce noticeably different slopes across classes. This indicates that the temporal trend in mass varies across meteorite types, likely due to these same compositional and structural differences, with some meteorite classes exhibiting stronger temporal trends in mass than others. Planetary science research suggests that meteorites originate from different asteroids and parent bodies, meaning that different classes can possess distinct compositional and structural characteristics <span class="citation" data-cites="lauretta2008">(<a href="#ref-lauretta2008" role="doc-biblioref">Lauretta and McSween 2008</a>)</span>. These differences may influence how meteorites fragment during atmospheric entry and how frquently they are recovered.</p>
+<p>Geographic location also showed statistically significant relationships with meteorite mass, though with relatively small coefficient magnitudes. These effects likely reflect observational and recovery bias rather than true physical differences in mass distribution, as meteorites are easier to detect in sparsely vegetated or lightly populated environments such as deserts or polar regions where fragments remain visible and well preserved <span class="citation" data-cites="smithsonian nhm_meteorites">(<a href="#ref-smithsonian" role="doc-biblioref">Smithsonian Institution n.d.</a>; <a href="#ref-nhm_meteorites" role="doc-biblioref">Natural History Museum n.d.</a>)</span>.</p>
+<p>Finally, fall status (<em>Fell</em> vs.&nbsp;<em>Found</em>) was associated with systematic differences in mass. Meteorites classified as Found tended to have lower predicted mass values than those directly observed falling, likely because smaller meteorites often go unnoticed during atmospheric entry and are only discovered later through geological surveys or scientific expeditions. As shown in <a href="#fig-predicted" class="quarto-xref">Figure&nbsp;2</a>, the model’s predictions are concentrated within a relatively narrow range despite the wide spread of actual log10(mass) values. This suggests the model captures the central tendency of meteorite mass well but struggles to predict both very large and very small meteorites accurately, likely due to the high variability in mass that the available predictors alone cannot fully explain.</p>
+</section>
+<section id="were-these-findings-expected" class="level2" data-number="5.2">
+<h2 data-number="5.2" class="anchored" data-anchor-id="were-these-findings-expected"><span class="header-section-number">5.2</span> Were These Findings Expected?</h2>
+<p>Many of the observed patterns are consistent with expectations from meteoritics and observational science. The negative relationship between discovery year and mass aligns with historical developments in meteorite detection. Earlier meteorite records were typically limited to large and visually dramatic falls that were easily observed or caused noticeable damage <span class="citation" data-cites="nasa_facts">(<a href="#ref-nasa_facts" role="doc-biblioref">NASA 2024</a>)</span>. In contrast, modern monitoring networks, satellite tracking systems, and increased scientific interest have allowed researchers to catalogue many small meteorites.</p>
+<p>Similarly, the importance of meteorite class was anticipated. Meteorite classifications reflect fundamental differences in mineral composition, iron content, and thermal history, which influence how meteorites fragment during atmospheric entry <span class="citation" data-cites="lauretta2008">(<a href="#ref-lauretta2008" role="doc-biblioref">Lauretta and McSween 2008</a>)</span>. Consequently, it is reasonable that certain classes are associated with systematically different mass distributions.</p>
+<p>Geographic effects likely reflect detection and preservation bias rather than actual physical differences in meteorite mass distribution. Certain environments preserve meteorites more effectively or make them easier to identify, which can influence the spatial distribution of recorded meteorite discoveries <span class="citation" data-cites="nhm_meteorites">(<a href="#ref-nhm_meteorites" role="doc-biblioref">Natural History Museum n.d.</a>)</span>.</p>
+<p>Overall, the model results align with both scientific expectations and known observational biases present in meteorite discovery trends</p>
+</section>
+<section id="potential-impact-of-findings" class="level2" data-number="5.3">
+<h2 data-number="5.3" class="anchored" data-anchor-id="potential-impact-of-findings"><span class="header-section-number">5.3</span> Potential Impact of Findings</h2>
+<p>These findings contribute to several areas of research. Most directly, they improve our understanding of meteorite detection biases; recognizing how factors such as location, observation method, and historical time period influence meteorite records allows researchers to better interpret datasets and avoid misleading conclusions about meteorite distributions <span class="citation" data-cites="nasa_meteorite">(<a href="#ref-nasa_meteorite" role="doc-biblioref">NASA n.d.</a>)</span>. This in turn may support improvements in meteorite search strategies, as identifying regions and environmental conditions associated with higher detection rates could help scientific expeditions prioritize recovery efforts more effectively <span class="citation" data-cites="nhm_meteorites">(<a href="#ref-nhm_meteorites" role="doc-biblioref">Natural History Museum n.d.</a>)</span>. The analysis more broadly contributes to planetary science research. Meteorites provide valuable information about the early solar system, asteroid formation, and planetary materials, and understanding patterns in their characteristics helps scientists better interpret recovered samples and reconstruct the processes that shaped our solar system. Such models may also play a role in impact risk assessment <span class="citation" data-cites="lauretta2008 smithsonian">(<a href="#ref-lauretta2008" role="doc-biblioref">Lauretta and McSween 2008</a>; <a href="#ref-smithsonian" role="doc-biblioref">Smithsonian Institution n.d.</a>)</span>. While most meteorites are small and harmless, analyzing long-term mass distribution and fall patterns improves our understanding of atmospheric entry processes and impact probabilities <span class="citation" data-cites="nasa_facts">(<a href="#ref-nasa_facts" role="doc-biblioref">NASA 2024</a>)</span>.</p>
+</section>
+<section id="limitations" class="level2" data-number="5.4">
+<h2 data-number="5.4" class="anchored" data-anchor-id="limitations"><span class="header-section-number">5.4</span> Limitations</h2>
+<p>One limitation of this anlaysis is that the regression model assumes linear relationships between the predictors and the log-transformed meteorite mass. While this simplifies interpretation, meteorite mass distributions may involve nonlinear relationships or additional physical variables not captred in the dataset. Additionally, meteorite discovery records are strongly influenced by observational and recovery biases, meaning the dataset may not perfectly represent the true global distribution meteorites.</p>
+</section>
+<section id="future-work" class="level2" data-number="5.5">
+<h2 data-number="5.5" class="anchored" data-anchor-id="future-work"><span class="header-section-number">5.5</span> Future Work</h2>
+<p>This analysis also raises several interesting questions for future research. One potential direction would be to examine how detection bias affects meteorite records over time by incorporating changes in observational technologies, satellite monitoring systems, or meteorite tracking networks into future models. Investigating regional meteorite discovery patterns could also be promising, as deserts and polar regions have yielded large numbers of discoveries due to favorable preservation conditions, and a spatial analysis incorporating environmental variables could provide deeper insight into these patterns <span class="citation" data-cites="nhm_meteorites">(<a href="#ref-nhm_meteorites" role="doc-biblioref">Natural History Museum n.d.</a>)</span>. Future work could also explore more flexible modeling approaches. While linear regression provides interpretable results, methods such as random forests or gradient boosting could potentially capture more complex relationships between meteorite characteristics. Incorporating additional meteorite properties, such as chemical composition, density, or atmospheric entry velocity, could further improve predictions of meteorite mass and provide deeper insight into fragmentation processes <span class="citation" data-cites="lauretta2008">(<a href="#ref-lauretta2008" role="doc-biblioref">Lauretta and McSween 2008</a>)</span>.</p>
+</section>
+</section>
+<section id="references" class="level1" data-number="6">
+<h1 data-number="6"><span class="header-section-number">6</span> References</h1>
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="ref-lauretta2008" class="csl-entry" role="listitem">
+Lauretta, D. S., and H. Y. McSween. 2008. <em>Meteorites and the Early Solar System <span>II</span></em>. The University of Arizona Press.
+</div>
+<div id="ref-nasa_meteorite" class="csl-entry" role="listitem">
+NASA. n.d. <span>“Meteorite Landings.”</span> NASA Open Data Portal. <a href="https://data.nasa.gov/dataset/meteorite-landings">https://data.nasa.gov/dataset/meteorite-landings</a>.
+</div>
+<div id="ref-nasa_facts" class="csl-entry" role="listitem">
+———. 2024. <span>“Meteor &amp; Meteorite Facts.”</span> NASA Science. <a href="https://science.nasa.gov/solar-system/meteors-meteorites/facts/">https://science.nasa.gov/solar-system/meteors-meteorites/facts/</a>.
+</div>
+<div id="ref-nhm_meteorites" class="csl-entry" role="listitem">
+Natural History Museum. n.d. <span>“Types of Meteorites.”</span> Natural History Museum. <a href="https://www.nhm.ac.uk/discover/types-of-meteorites.html">https://www.nhm.ac.uk/discover/types-of-meteorites.html</a>.
+</div>
+<div id="ref-smithsonian" class="csl-entry" role="listitem">
+Smithsonian Institution. n.d. <span>“Meteorite Landing Data.”</span> Smithsonian Institution Repository. <a href="https://repository.si.edu/handle/10088/20577">https://repository.si.edu/handle/10088/20577</a>.
+</div>
+</div>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
