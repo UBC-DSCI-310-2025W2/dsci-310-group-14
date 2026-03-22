@@ -3,7 +3,7 @@ title: "Predicting Meteorite Mass Using Temporal, Geographic, and Classification
 author: "DSCI 310 Group 14"
 format: html
 execute:
-  echo: true
+  echo: false
 ---
 
 # Summary
@@ -22,9 +22,10 @@ Meteorites vary widely in size, composition, and geographic distribution. Unders
 
 This analysis uses the NASA Meteorite Landings dataset:
 
-`https://data.nasa.gov/docs/legacy/meteorite_landings/Meteorite_Landings.csv`
+`https://data.nasa.gov/api/views/gh4g-9sfh/rows.csv?accessType=DOWNLOAD`
 
 The dataset includes:
+
 - `mass (g)`: meteorite mass
 - `year`: year of observation
 - `reclat`, `reclong`: geographic coordinates
@@ -35,124 +36,47 @@ The dataset includes:
 
 ## Data Loading
 
-The data was downloaded from NASA’s public data source and saved locally to support reproducibility.
-
-```{r}
-url <- "https://data.nasa.gov/resource/y77d-th95.csv"
-dir.create("data/raw", recursive = TRUE, showWarnings = FALSE)
-download.file(url, "data/raw/meteorite_landings.csv")
-
-data <- read.csv("C:\Users\riash\Downloads\Meteorite_Landings.csv")
-```
+The data was downloaded from NASA's public data source using `01_download_meteorite_data.R` and saved to `data/raw/meteorite_landings.csv`.
 
 ## Data Wrangling and Cleaning
 
-The dataset was cleaned by converting variables to appropriate types, removing missing values, excluding non-positive mass values, and retaining only the five most common meteorite classes. A base-10 log transformation was applied to meteorite mass to reduce skewness.
-
-```{r}
-library(dplyr)
-
-data_clean <- data %>%
-  mutate(
-    mass = as.numeric(mass),
-    year = as.numeric(substr(year, 1, 4)),
-    reclat = as.numeric(reclat),
-    reclong = as.numeric(reclong),
-    recclass = as.factor(recclass),
-    fall = as.factor(fall)
-  ) %>%
-  filter(
-    !is.na(mass),
-    !is.na(year),
-    !is.na(reclat),
-    !is.na(reclong),
-    !is.na(recclass),
-    !is.na(fall),
-    mass > 0
-  )
-
-top_classes <- data_clean %>%
-  count(recclass, sort = TRUE) %>%
-  slice_head(n = 5) %>%
-  pull(recclass)
-
-data_clean <- data_clean %>%
-  filter(recclass %in% top_classes) %>%
-  mutate(log_mass = log10(mass))
-```
+The dataset was cleaned using `02_clean_meteorite_data.R` by converting variables to appropriate types, removing missing values, excluding non-positive mass values, and retaining only the five most common meteorite classes. A base-10 log transformation was applied to meteorite mass to reduce skewness. The cleaned data was saved to `data/processed/meteorite_landings_clean.csv`.
 
 ## Exploratory Visualization
 
-A scatterplot was created to examine the relationship between year and log-transformed meteorite mass across the five most common meteorite classes.
+A scatterplot was created to examine the relationship between year and log-transformed meteorite mass.
 
 ```{r}
-#| fig-cap: "Figure 1. Log10(mass) versus year by meteorite class."
-library(ggplot2)
-
-ggplot(data_clean, aes(x = year, y = log_mass, color = recclass)) +
-  geom_point(alpha = 0.4) +
-  labs(
-    x = "Year",
-    y = "Log10(Mass)",
-    color = "Class"
-  ) +
-  theme_minimal()
-```
-
-## Train-Test Split
-
-To support predictive analysis, the cleaned dataset was randomly split into training and testing sets using an 80/20 split.
-
-```{r}
-set.seed(123)
-
-train_index <- sample(nrow(data_clean), 0.8 * nrow(data_clean))
-train_data <- data_clean[train_index, ]
-test_data <- data_clean[-train_index, ]
+#| fig-cap: "Figure 1. Log10(mass) versus year."
+knitr::include_graphics("results/eda/meteorite_eda_eda_plot.png")
 ```
 
 ## Regression Model
 
-A linear regression model was fit using year, meteorite classification, geographic coordinates, and fall status, including an interaction between year and meteorite classification.
+A Gaussian GLM was fit using `04_model_meteorite_data.R` with year, meteorite classification, geographic coordinates, and fall status as predictors, including an interaction between year and meteorite classification:
 
-```{r}
-model <- lm(log_mass ~ year * recclass + reclat + reclong + fall, data = train_data)
 ```
+log_mass ~ year * recclass + reclat + reclong + fall
+```
+
+The data was split 80/20 into training and testing sets prior to fitting.
 
 ## Model Visualization
 
-Regression lines were plotted to show predicted trends in log-transformed meteorite mass over time for each meteorite class.
+Regression lines show predicted trends in log-transformed meteorite mass over time for each of the five most common meteorite classes.
 
 ```{r}
 #| fig-cap: "Figure 2. Regression lines by meteorite class."
-ggplot(train_data, aes(x = year, y = log_mass, color = recclass)) +
-  geom_point(alpha = 0.3) +
-  geom_smooth(method = "lm", se = FALSE) +
-  labs(
-    x = "Year",
-    y = "Log10(Mass)",
-    color = "Class"
-  ) +
-  theme_minimal()
+knitr::include_graphics("results/model/meteorite_model_regression_lines.png")
 ```
 
-##Model Evaluation
+## Model Evaluation
 
 Predictions from the fitted model were compared against actual log-transformed meteorite mass values in the test set.
 
 ```{r}
-
 #| fig-cap: "Figure 3. Predicted versus actual log10(mass) values."
-predictions <- predict(model, newdata = test_data)
-
-ggplot(test_data, aes(x = predictions, y = log_mass)) +
-  geom_point(alpha = 0.4) +
-  geom_abline(slope = 1, intercept = 0, color = "red") +
-  labs(
-    x = "Predicted",
-    y = "Actual"
-  ) +
-  theme_minimal()
+knitr::include_graphics("results/model/meteorite_model_pred_vs_actual.png")
 ```
 
 # Discussion
@@ -163,35 +87,22 @@ This analysis is predictive rather than causal. The results show that while the 
 
 Limitations include:
 
-- high variability in meteorite mass
+- High variability in meteorite mass
+- Limited predictor variables
+- Potential measurement inconsistencies
 
-- limited predictor variables
+Future work could explore:
 
-- potential measurement inconsistencies
-
-- Future work could explore:
-
-- additional predictors
-
-- nonlinear modeling approaches
-
-- machine learning techniques
-
+- Additional predictors
+- Nonlinear modeling approaches
+- Machine learning techniques
 
 # References
 
-NASA Meteorite Landings Dataset
-https://data.nasa.gov/
+NASA Meteorite Landings Dataset. https://data.nasa.gov/
 
-James, G., Witten, D., Hastie, T., & Tibshirani, R. (2021).
-An Introduction to Statistical Learning.
+James, G., Witten, D., Hastie, T., & Tibshirani, R. (2021). *An Introduction to Statistical Learning.*
 
-Wickham, H. et al. (2019).
-Welcome to the tidyverse.
+Wickham, H. et al. (2019). Welcome to the tidyverse. *Journal of Open Source Software.*
 
-R Core Team (2023).
-R: A Language and Environment for Statistical Computing.
-
-
-
-
+R Core Team (2023). *R: A Language and Environment for Statistical Computing.*

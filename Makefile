@@ -1,7 +1,9 @@
 # Run the full analysis pipeline
 all: results/model/meteorite_model_regression_lines.png \
      results/model/meteorite_model_pred_vs_actual.png \
-     results/eda/meteorite_eda_eda_plot.png
+     results/eda/meteorite_eda_eda_plot.png \
+     QuartoDSCIProject.html
+
 
 # Download raw data
 data/raw/meteorite_landings.csv: src/01_download_meteorite_data.R
@@ -30,8 +32,16 @@ results/model/meteorite_model_pred_vs_actual.png: src/04_model_meteorite_data.R 
 		--input=data/processed/meteorite_landings_clean.csv \
 		--output=results/model/meteorite_model
 
+
+# Render the report
+QuartoDSCIProject.html: QuartoDSCIProject.qmd \
+                        results/eda/meteorite_eda_eda_plot.png \
+                        results/model/meteorite_model_regression_lines.png \
+                        results/model/meteorite_model_pred_vs_actual.png
+	quarto render QuartoDSCIProject.qmd
+
 # Delete all generated files
 clean:
-	rm -rf data/processed/ results/*
+	rm -rf data/processed/ results/* QuartoDSCIProject.html QuartoDSCIProject_files/
 
 .PHONY: all clean
