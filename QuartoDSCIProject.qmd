@@ -16,7 +16,6 @@ execute:
   warning: false
   message: false
 ---
-
 ```{r}
 #| label: setup
 library(tidyverse)
@@ -65,20 +64,6 @@ model <- glm(
   family = gaussian()
 )
 
-# Predictions
-year_seq <- seq(min(meteors_clean$year), max(meteors_clean$year), length.out = 100)
-
-predictions <- predict(model, newdata = test_data)
-
-prediction_grid <- expand.grid(
-  year     = year_seq,
-  reclat   = mean(meteors_clean$reclat),
-  reclong  = mean(meteors_clean$reclong),
-  fall     = levels(meteors_clean$fall)[1],
-  recclass = top_classes
-)
-prediction_grid$pred_log_mass <- predict(model, newdata = prediction_grid)
-
 # Values
 n_obs        <- nrow(meteors_clean)
 n_train      <- nrow(train_data)
@@ -94,18 +79,15 @@ top_cls_str  <- paste(as.character(top_classes), collapse = ", ")
 
 This project delves into the NASA Meteorite Landings dataset to gain insight into how meteorite mass varies over time, location, and meteorite classification. Meteorite mass is a fundamental characteristic of a meteorite, and understanding what influences its variation can shed valuable light on the nature of meteorite populations [@nasa_facts]. The project applies data cleaning, exploratory visualization, and linear regression modelling to examine whether temporal trends, geographic patterns, and meteorite class interactions can explain the differences in meteorite mass. The model captures general trends in the data but shows limited accuracy for extreme values, suggesting that additional predictors may be required for improved performance.
 
-
 # Introduction
 
 A meteorite is defined as a meteoroid that survives a fall through the atmosphere and hits land [@nasa_facts]. Meteoroids are stagnant rocks in space, with sizes ranging from a speck of dust to that of an asteroid. Most meteoroids are chunks or debris of larger bodies that have been destructed; these can be rocky, metallic, or a combination of both [@nasa_facts]. Meteorites that land on Earth are among the oldest and most diverse materials from the formation of our solar system. Studying meteorite landings allows scientists to discover and reconstruct key aspects of our planetary history, including the age and composition of planets and the extent to which materials were changed by previous impacts [@nasa_facts].
 
 Despite their historical and scientific relevance, meteorite landings are affected by a range of geographic aspects. Factors such as where a meteorite lands, when it is discovered, and how it is classified play a crucial role in determining how accurately they represent the true distribution of meteorites. In particular, meteorite mass is a fundamental characteristic that can be used to describe and compare meteorite samples across different classes and discovery conditions; it can be used to observe how it fluctuates against time, location, and meteorite class. This project leverages NASA’s Meteorite Landings dataset to explore these patterns. By building a linear regression model to predict the logarithm of meteorite mass based on year, class, location, and whether the meteorite was found or observed falling, this project aims to contribute to a deeper understanding of both the physical nature of meteorites and discovery patterns that shape the history of meteorites.
 
-
 ## Predictive Question
 
 Can meteorite mass be predicted using year, meteorite classification, geographic location, and fall status?
-
 
 ## Dataset Description
 
@@ -127,12 +109,11 @@ vars_df <- data.frame(
 kable(vars_df, col.names = c("Variable", "Description"), align = c("l", "l"))
 ```
 
-
-# Methods
+# Methods 
 
 ## Data Loading and Cleaning
 
-The NASA Meteorite Landings dataset was loaded and the following preprocessing steps were applied:
+The NASA Meteorite Landings dataset was loaded from NASA's public data source using `01_download_meteorite_data.R` and saved to `data/raw/meteorite_landings.csv`. The following preprocessing steps were applied using `02_clean_meteorite_data.R`:
 
 1. Observations with missing values in `mass`, `year`, `reclat`, `reclong`, `fall`, and `recclass` were removed
 2. Variable types were standardized: 
@@ -142,8 +123,17 @@ The NASA Meteorite Landings dataset was loaded and the following preprocessing s
 4. Because meteorite mass is highly right-skewed, a base-10 logarithmic transformation was applied to stabilize variance and make linear regression more appropriate
 5. To avoid sparse categories, only the `r n_classes` most frequent meteorite classifications were retained: `r top_cls_str`
 
-After cleaning, the dataset contains `r n_obs` observations.
+The cleaned data was saved to `data/processed/meteorite_landings_clean.csv`.
 
+## Exploratory Visualization
+
+A scatterplot (@fig-eda) was created to examine the relationship between year and log-transformed meteorite mass.
+
+```{r}
+#| label: fig-eda
+#| fig-cap: "Log10-transformed meteorite mass versus year of discovery. Each point represents a single meteorite from the five most common classification classes."
+knitr::include_graphics("results/eda/meteorite_eda_eda_plot.png")
+```
 
 ## Train-Test Split
 
@@ -154,12 +144,11 @@ The training set was used to fit the regression model, and the testing set was u
 
 ## Regression Model
 
-A Gaussian linear regression model was fit on the training data using year, meteorite classification, longitude, latitude, and fall status, with an interaction term between year and classification:
+A Gaussian linear regression model was fit using `04_model_meteorite_data.R` with year, meteorite classification, longitude, latitude, and fall status as predictors, including an interaction term between year and classification:
 
 $$\log_{10}(\text{mass}) \sim \text{year} \times \text{recclass} + \text{reclat} + \text{reclong} + \text{fall}$$
 
 The interaction between year and meteorite class allows the relationship between time and meteorite mass to vary across classification types. The first six estimated model coefficients are shown in @tbl-model.
-
 
 ```{r}
 #| label: tbl-model
@@ -173,7 +162,6 @@ kable(
 )
 ```
 
-
 # Results
 
 ## Regression Lines by Meteorite Class
@@ -183,46 +171,20 @@ kable(
 ```{r}
 #| label: fig-regression
 #| fig-cap: "Log10(mass) versus year for the five most common meteorite classes. Regression lines show predicted trends for each class from the fitted linear regression model."
-#| fig-width: 8
-#| fig-height: 4
-
-ggplot(meteors_clean, aes(x = year, y = log_mass, color = recclass)) +
-  geom_point(alpha = 0.3) +
-  geom_line(
-    data = prediction_grid,
-    aes(x = year, y = pred_log_mass, color = recclass),
-    linewidth = 1.2
-  ) +
-  labs(
-    title = "Regression Lines by Meteorite Class",
-    x     = "Year",
-    y     = "Log10(Mass)",
-    color = "Meteorite Class"
-  ) +
-  theme_minimal()
+knitr::include_graphics("results/model/meteorite_model_regression_lines.png")
 ```
 
-@fig-regression reveals a downward trend in predicted log10(mass) over time across all `r n_classes` classes. All classes exhibit decreasing predicted mass over time, with slopes differing slightly across classes. This reflects the interaction between year and meteorite classification included in the model. Recent years show a greater density of smaller-mass meteorites, which is consistent with improvements in detection technology over time that allow smaller meteorites to be recorded in more recent periods.
+There is a downward trend in predicted log10(mass) over time across all `r n_classes` classes (@fig-regression). All classes exhibit decreasing predicted mass over time, with slopes differing slightly across classes. This reflects the interaction between year and meteorite classification included in the model. Recent years show a greater density of smaller-mass meteorites, which is consistent with improvements in detection technology over time that allow smaller meteorites to be recorded in more recent periods.
 
 
-## Predictive Performance
+## Predictive Performance: Model Evaluation
 
 @fig-predicted shows a scatterplot comparing predicted and actual log10(mass) values on the test set.
 
 ```{r}
 #| label: fig-predicted
 #| fig-cap: "Predicted versus actual log10(mass) values. The red line represents perfect prediction; points falling on this line indicate exact agreement between predicted and observed values."
-#| fig-width: 8
-#| fig-height: 4
-
-ggplot(test_data, aes(x = log_mass, y = predictions)) +
-  geom_point(alpha = 0.4) +
-  geom_abline(intercept = 0, slope = 1, color = "red", linewidth = 1) +
-  labs(
-    x = "Actual Log10(Mass)",
-    y = "Predicted Log10(Mass)"
-  ) +
-  theme_minimal()
+knitr::include_graphics("results/model/meteorite_model_pred_vs_actual.png")
 ```
 
 As shown in @fig-predicted, predictions are more concentrated than actual values, particularly for extreme masses, indicating that the model captures general trends but does not fully account for high-variability outliers. Larger meteorites exhibit greater prediction variability.
@@ -233,16 +195,16 @@ Temporal, geographic, and compositional characteristics all contribute meaningfu
 # Discussion
 The analysis suggests that meteorite mass can be partially predicted using year, meteorite classification, geographic location, and fall status, though with moderate accuracy. The model captures meaningful systematic patterns in the data, but as shown in @fig-predicted, predictions are concentrated within a narrow range and struggle to account for extreme mass values, indicating that these predictors alone are not sufficient for highly accurate prediction.
 
-This study explored how characteristics of meteorite landings relate to meteorite mass. Using the NASA Meteorite Landings dataset, we built a linear regression model predicting the logarithm of meteorite mass (`log_mass`) based on the year of discovery, meteorite class (`recclass`), geographic coordinates (`latitude`, and `longitude`), and whether the meteorite was observed fallling or found later (`fall`) [@nasa_meteorite]. Interaction terms between year and meteorite class were also included to capture class-specific temporal trends. The dataset used in this analysis comes from the NASA Meteorite Landings database, which compiles meteorite discovery records including mass, location, classification, and year of fall or discovery.
+This study explored how characteristics of meteorite landings relate to meteorite mass. Using the NASA Meteorite Landings dataset, we built a linear regression model predicting the logarithm of meteorite mass (`log_mass`) based on the year of discovery, meteorite class (`recclass`), geographic coordinates (`latitude`, and `longitude`), and whether the meteorite was observed falling or found later (`fall`) [@nasa_meteorite]. Interaction terms between year and meteorite class were also included to capture class-specific temporal trends. The dataset used in this analysis comes from the NASA Meteorite Landings database, which compiles meteorite discovery records including mass, location, classification, and year of fall or discovery.
 
 
 ## Summary of Findings
 
-Several meaningful patterns emerged from the regression model. Most notably, year showed a statistically significant negative relationship with meteorite mass; the negative coefficient for year suggests that more recently discovered meteorites tend to have smaller masses compared to earlier discoveries [@nasa_facts]. This downward trend is clearly visible across all five classes in @fig-regression. A plausible explanation is that improvements in detection technology and scientific monitoring have made it easier to detect smaller meteorites that would previously have gone unnoticed. As meteorite observation networks and scientific cataloguing efforts have expanded over time, the number of recorded meteorites has increased signficantly.
+Several meaningful patterns emerged from the regression model. Most notably, year showed a statistically significant negative relationship with meteorite mass; the negative coefficient for year suggests that more recently discovered meteorites tend to have smaller masses compared to earlier discoveries [@nasa_facts]. This downward trend is clearly visible across all five classes in @fig-regression. A plausible explanation is that improvements in detection technology and scientific monitoring have made it easier to detect smaller meteorites that would previously have gone unnoticed. As meteorite observation networks and scientific cataloguing efforts have expanded over time, the number of recorded meteorites has increased significantly.
 
 Meteorite class also plays an important role in determining mass. Several classes, including H5 and H6, showed statistically significant differences in predicted mass relative to the reference class, reflecting differences in mineral composition, metal content, and thermal history [@nhm_meteorites]. These physical differences influence how meteorites form, fragment, and survive atmospheric entry. For example, different chondrite groups originate from different parent bodies in the asteroid belt and may therefore exhibit variation in density and structural composition [@lauretta2008]. 
 
-As shown in @fig-regression, the interaction terms between year and meteorite class produce noticeably different slopes across classes. This indicates that the temporal trend in mass varies across meteorite types, likely due to these same compositional and structural differences, with some meteorite classes exhibiting stronger temporal trends in mass than others. Planetary science research suggests that meteorites originate from different asteroids and parent bodies, meaning that different classes can possess distinct compositional and structural characteristics [@lauretta2008]. These differences may influence how meteorites fragment during atmospheric entry and how frquently they are recovered.
+As shown in @fig-regression, the interaction terms between year and meteorite class produce noticeably different slopes across classes. This indicates that the temporal trend in mass varies across meteorite types, likely due to these same compositional and structural differences, with some meteorite classes exhibiting stronger temporal trends in mass than others. Planetary science research suggests that meteorites originate from different asteroids and parent bodies, meaning that different classes can possess distinct compositional and structural characteristics [@lauretta2008]. These differences may influence how meteorites fragment during atmospheric entry and how frequently they are recovered.
 
 Geographic location also showed statistically significant relationships with meteorite mass, though with relatively small coefficient magnitudes. These effects likely reflect observational and recovery bias rather than true physical differences in mass distribution, as meteorites are easier to detect in sparsely vegetated or lightly populated environments such as deserts or polar regions where fragments remain visible and well preserved [@smithsonian; @nhm_meteorites]. 
 
@@ -257,7 +219,7 @@ Similarly, the importance of meteorite class was anticipated. Meteorite classifi
 
 Geographic effects likely reflect detection and preservation bias rather than actual physical differences in meteorite mass distribution. Certain environments preserve meteorites more effectively or make them easier to identify, which can influence the spatial distribution of recorded meteorite discoveries [@nhm_meteorites].
 
-Overall, the model results align with both scientific expectations and known observational biases present in meteorite discovery trends
+Overall, the model results align with both scientific expectations and known observational biases present in meteorite discovery trends.
 
 
 ## Potential Impact of Findings
@@ -267,13 +229,12 @@ These findings contribute to several areas of research. Most directly, they impr
 
 ## Limitations
 
-One limitation of this anlaysis is that the regression model assumes linear relationships between the predictors and the log-transformed meteorite mass. While this simplifies interpretation, meteorite mass distributions may involve nonlinear relationships or additional physical variables not captred in the dataset. Additionally, meteorite discovery records are strongly influenced by observational and recovery biases, meaning the dataset may not perfectly represent the true global distribution meteorites.
+One limitation of this analysis is that the regression model assumes linear relationships between the predictors and the log-transformed meteorite mass. While this simplifies interpretation, meteorite mass distributions may involve nonlinear relationships or additional physical variables not captured in the dataset. Additionally, meteorite discovery records are strongly influenced by observational and recovery biases, meaning the dataset may not perfectly represent the true global distribution meteorites.
 
 
 ## Future Work
 
 This analysis also raises several interesting questions for future research. One potential direction would be to examine how detection bias affects meteorite records over time by incorporating changes in observational technologies, satellite monitoring systems, or meteorite tracking networks into future models. Investigating regional meteorite discovery patterns could also be promising, as deserts and polar regions have yielded large numbers of discoveries due to favorable preservation conditions, and a spatial analysis incorporating environmental variables could provide deeper insight into these patterns [@nhm_meteorites]. Future work could also explore more flexible modeling approaches. While linear regression provides interpretable results, methods such as random forests or gradient boosting could potentially capture more complex relationships between meteorite characteristics. Incorporating additional meteorite properties, such as chemical composition, density, or atmospheric entry velocity, could further improve predictions of meteorite mass and provide deeper insight into fragmentation processes [@lauretta2008].
-
 
 # References
 
