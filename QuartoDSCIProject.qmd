@@ -174,7 +174,7 @@ kable(
 knitr::include_graphics("results/model/meteorite_model_regression_lines.png")
 ```
 
-@fig-regression reveals a downward trend in predicted log10(mass) over time across all `r n_classes` classes. All classes exhibit decreasing predicted mass over time, with slopes differing slightly across classes. This reflects the interaction between year and meteorite classification included in the model. Recent years show a greater density of smaller-mass meteorites, which is consistent with improvements in detection technology over time that allow smaller meteorites to be recorded in more recent periods.
+There is a downward trend in predicted log10(mass) over time across all `r n_classes` classes (@fig-regression). All classes exhibit decreasing predicted mass over time, with slopes differing slightly across classes. This reflects the interaction between year and meteorite classification included in the model. Recent years show a greater density of smaller-mass meteorites, which is consistent with improvements in detection technology over time that allow smaller meteorites to be recorded in more recent periods.
 
 
 ## Predictive Performance: Model Evaluation
