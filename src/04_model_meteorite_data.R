@@ -5,6 +5,8 @@ library(rsample)
 library(ggplot2)
 library(tidyverse)
 
+source("R/meteorite_functions.R")
+
 doc <- "
 Usage:
   04_model_meteorite_data.R --input=<input> --output=<output>
@@ -40,12 +42,7 @@ split_obj <- initial_split(meteors_clean, prop = 0.8)
 train_data <- training(split_obj)
 test_data  <- testing(split_obj)
 
-model <- glm(
-  log_mass ~ year * recclass + reclat + reclong + fall,
-  data = train_data,
-  family = gaussian()
-)
-
+model <- fit_meteorite_model(train_data)
 
 predictions <- predict(model, newdata = test_data)
 prediction_grid <- expand.grid(
