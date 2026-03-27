@@ -25,6 +25,10 @@ RUN R -e "install.packages('renv', repos='https://cloud.r-project.org/')"
 RUN R -e "renv::restore()"
 
 RUN mkdir -p output && chown rstudio:rstudio output
-COPY --chown=rstudio:rstudio src/meteor-analysis.ipynb src/meteor-analysis.ipynb
+COPY --chown=rstudio:rstudio src/ src/
 COPY --chown=rstudio:rstudio data/raw/meteorite_landings.csv data/raw/meteorite_landings.csv
+COPY --chown=rstudio:rstudio Makefile Makefile
 COPY --chown=rstudio:rstudio README.md README.md
+COPY --chown=rstudio:rstudio QuartoDSCIProject.qmd QuartoDSCIProject.qmd
+COPY --chown=rstudio:rstudio references.bib references.bib
+COPY --chown=rstudio:rstudio R/ R/

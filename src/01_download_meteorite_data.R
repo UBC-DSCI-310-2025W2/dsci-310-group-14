@@ -1,5 +1,8 @@
 #!/usr/bin/env Rscript
 library(docopt)
+library(here)
+
+source(here("R", "download_utils.R"))
 
 doc <- "
 Usage:
@@ -12,10 +15,4 @@ Options:
 
 args <- docopt(doc)
 
-dir.create(dirname(args$output), recursive = TRUE, showWarnings = FALSE)
-
-if (grepl("^https?://", args$input)) {
-  download.file(args$input, args$output, method = "curl")
-} else {
-  file.copy(args$input, args$output, overwrite = TRUE)
-}
+fetch_data(args$input, args$output)
