@@ -67,16 +67,16 @@ Rscript 04_model_meteorite_data.R --input=data/processed/meteorite_landings_clea
 
 ## How to Run the Analysis
 
-### Method 1 — Run Using Make (Recommended):
+### Method 1: Run Using Make (Recommended):
 
-#### Step 1 — Clone the Repository
+#### Step 1: Clone the Repository
 
 ```bash
 git clone https://github.com/UBC-DSCI-310-2025W2/dsci-310-group-14.git
 cd dsci-310-group-14
 ```
 
-#### Step 2 — Restore the R Environment
+#### Step 2: Restore the R Environment
 
 This project uses renv to manage package dependencies. Restore the project environment using:
 
@@ -92,7 +92,7 @@ Installs all required packages listed in the renv.lock file.
 make all
 ```
 
-### 2. Run Using Docker (Pull from Dockerhub)
+### Method 2: Run Using Docker (Pull from Dockerhub)
 
 The analysis can also be run without installing R locally, through a docker image published on dockerhub.
 
@@ -130,7 +130,7 @@ password: dsci310
 make all
 ```
 
-### 3. Build Docker Image from Source
+### Method 3: Build Docker Image from Source
 
 If you want to build the container locally instead of pulling it from DockerHub:
 
@@ -153,7 +153,7 @@ docker build -t dsci-310-group14 .
 docker run --rm -p 8787:8787 -e PASSWORD=dsci310 dsci-310-group14
 ```
 
-Login Credentials:
+#### Login Credentials:
 
 ```bash
 username: rstudio
@@ -188,7 +188,9 @@ output/
 This project is written in **R** and uses **renv** to manage package dependencies.  
 All required packages are listed in the `renv.lock` file and can be installed by running:
 
+```R
 renv::restore()
+```
 
 The main R packages used in this analysis include:
 
