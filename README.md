@@ -43,11 +43,9 @@ $$
    - **Regression lines by meteorite class over time**
    - **Predicted vs. actual log-mass values**
 
-The analysis is implemented in **R** and can be run locally or through **Docker**.p
+The analysis is implemented in **R** and can be run locally (using **make**) or through **Docker**.
 
-# How to Run the Analysis
-
-## 1. Run Locally Using Rscript
+<!-- ## 1. Run Locally Using Rscript
 
 Run these in order:
 
@@ -65,16 +63,20 @@ Rscript 03_eda_meteorite_data.R --input=data/processed/meteorite_landings_clean.
 Rscript 04_model_meteorite_data.R --input=data/processed/meteorite_landings_clean.csv --output=results/model/meteorite_model
 ```
 
-### OLDER METHOD !!!! (below)
+### OLDER METHOD !!!! (below) -->
 
-### Step 1 — Clone the Repository
+## How to Run the Analysis
+
+### Method 1 — Run Using Make (Recommended):
+
+#### Step 1 — Clone the Repository
 
 ```bash
 git clone https://github.com/UBC-DSCI-310-2025W2/dsci-310-group-14.git
 cd dsci-310-group-14
 ```
 
-### Step 2 — Restore the R Environment
+#### Step 2 — Restore the R Environment
 
 This project uses renv to manage package dependencies. Restore the project environment using:
 
@@ -84,29 +86,30 @@ renv::restore()
 
 Installs all required packages listed in the renv.lock file.
 
-### Step 3: Run the Script
+#### Step 3: Run the Pipeline
 
 ```bash
-Rscript src/02_meteor-size-analysis.R
+make all
 ```
 
-## 2. Run Using Docker (Pull from Dockerhub)
+### 2. Run Using Docker (Pull from Dockerhub)
 
 The analysis can also be run without installing R locally, through a docker image published on dockerhub.
 
-### Step 1: Pull the docker image
+#### Step 1: Pull the docker image
+
 
 ```bash
 docker pull babustudy/dsci-310-group14
 ```
 
-### Step 2: Run the container
+#### Step 2: Run the container
 
 ```bash
 docker run --rm -p 8787:8787 -e PASSWORD=dsci310 babustudy/dsci-310-group14
 ```
 
-### Step 3: Open RStudio
+#### Step 3: Open RStudio
 
 Open a browser and go to:
 
@@ -121,30 +124,30 @@ username: rstudio
 password: dsci310
 ```
 
-### Step 4: Run the script
+#### Step 4: Run the script inside Docker Terminal
 
 ```bash
-Rscript src/02_meteor-size-analysis.R
+make all
 ```
 
-## 3. Build Docker Image from Source
+### 3. Build Docker Image from Source
 
 If you want to build the container locally instead of pulling it from DockerHub:
 
-### Step 1: Clone the Repository
+#### Step 1: Clone the Repository
 
 ```bash
 git clone https://github.com/UBC-DSCI-310-2025W2/dsci-310-group-14.git
 cd dsci-310-group-14
 ```
 
-### Step 2: Build the Image
+#### Step 2: Build the Image
 
 ```bash
-docker build -t dsci-310-group14
+docker build -t dsci-310-group14 .
 ```
 
-### Step 3: Run the Container
+#### Step 3: Run the Container
 
 ```bash
 docker run --rm -p 8787:8787 -e PASSWORD=dsci310 dsci-310-group14
@@ -157,10 +160,10 @@ username: rstudio
 password: dsci310
 ```
 
-### Step 4: Run the script
+#### Step 4: Run the script inside Docker Terminal
 
 ```bash
-Rscript src/02_meteor-size-analysis.R
+make all
 ```
 
 ## Output
@@ -195,6 +198,8 @@ The main R packages used in this analysis include:
 - readr (data import)
 - broom (model output tidying)
 - renv (reproducible dependency management)
+- docopt (function documentation)
+- testthat (to test functions)
 
 To run the containerized workflow, the following software is also required:
 
