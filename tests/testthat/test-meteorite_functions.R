@@ -1,6 +1,7 @@
 library(testthat)
 
-source("../../R/meteorite_functions.R")
+source(here::here("R", "meteorite_functions.R"))
+
 
 test_that("fit_meteorite_model returns a glm object", {
   train_data <- data.frame(

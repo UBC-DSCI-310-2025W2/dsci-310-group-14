@@ -1,7 +1,7 @@
 library(testthat)
 library(tidyverse)
 
-source(file.path("..", "..", "R", "clean_meteorite_functions.R"))
+source(here::here("R", "clean_meteorite_functions.R"))
 
 test_that("clean_meteorite_data removes invalid rows and adds transformed columns", {
   test_df <- tibble(

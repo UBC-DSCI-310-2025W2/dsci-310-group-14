@@ -4,7 +4,7 @@
 library(testthat)
 library(ggplot2)
 
-source(file.path("..", "..", "R", "eda_function.R"))
+source(here::here("R", "eda_function.R"))
 
 # plot_year_vs_log_mass()
 
