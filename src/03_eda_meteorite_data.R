@@ -2,6 +2,9 @@
 
 library(docopt)
 library(ggplot2)
+
+source("R/eda_function.R")
+
 doc <- "
 Usage:
   03_eda_meteorite_data.R --input=<input> --output=<output>
@@ -16,12 +19,16 @@ args <- docopt(doc)
 meteors_clean <- read.csv(args$input)
 
 # Simple exploratory plot
-p1 <- ggplot(meteors_clean, aes(x = year, y = log_mass)) +
-  geom_point(alpha = 0.3) +
-  labs(
-    title = "Year vs Log10(Mass)",
-    x = "Year",
-    y = "Log10(Mass)"
-  )
+p1 <- plot_year_vs_log_mass(meteors_clean)
 
-ggsave(paste0(args$output, "_eda_plot.png"), plot = p1, create.dir = TRUE)
+
+# ggplot(meteors_clean, aes(x = year, y = log_mass)) +
+#   geom_point(alpha = 0.3) +
+#   labs(
+#     title = "Year vs Log10(Mass)",
+#     x = "Year",
+#     y = "Log10(Mass)"
+#   )
+
+save_plot(p1, args$output, "_eda_plot")
+# ggsave(paste0(args$output, "_eda_plot.png"), plot = p1, create.dir = TRUE)

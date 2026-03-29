@@ -23,4 +23,3 @@ meteors_clean <- meteors %>%
 
 dir.create(dirname(args$output), recursive = TRUE, showWarnings = FALSE)
 write.csv((meteors_clean), args$output, row.names = FALSE)
-
