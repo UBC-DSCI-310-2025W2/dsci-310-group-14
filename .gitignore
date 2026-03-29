@@ -13,3 +13,4 @@ renv/.gitignore
 .DS_Store
 .ipynb_checkpoints
 src/.ipynb_checkpoints/
+QuartoDSCIProject_files/

@@ -8,7 +8,7 @@ all: results/model/meteorite_model_regression_lines.png \
 # Download raw data
 data/raw/meteorite_landings.csv: src/01_download_meteorite_data.R
 	Rscript src/01_download_meteorite_data.R \
-		--input=https://data.nasa.gov/docs/legacy/meteorite_landings/Meteorite_Landings.csv \
+		--input="https://data.nasa.gov/docs/legacy/meteorite_landings/Meteorite_Landings.csv" \
 		--output=data/raw/meteorite_landings.csv
 
 # Clean the raw data
