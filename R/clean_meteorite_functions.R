@@ -10,15 +10,49 @@
 #' columns, a log_mass column, and factor fall and recclass columns.
 
 clean_meteorite_data <- function(df) {
-  df %>%
-    tidyr::drop_na(mass..g., year, reclat, reclong, fall, recclass) %>%
+  if (!is.data.frame(df)) {
+    stop("`df` must be a data frame.", call. = FALSE)
+  }
+  required_cols <- c("mass..g.", "year", "reclat", "reclong", "fall", "recclass")
+  missing_cols <- setdiff(required_cols, names(df))
+  if (length(missing_cols) > 0) {
+    stop(
+      paste("Missing required columns:", paste(missing_cols, collapse = ", ")),
+      call. = FALSE
+    )
+  }
+
+  df_no_na <- df %>%
+    tidyr::drop_na(mass..g., year, reclat, reclong, fall, recclass)
+
+    mass_num <- suppressWarnings(as.numeric(df_no_na$mass..g.))
+    year_num <- suppressWarnings(as.numeric(df_no_na$year))
+    reclat_num <- suppressWarnings(as.numeric(df_no_na$reclat))
+    reclong_num <- suppressWarnings(as.numeric(df_no_na$reclong)) 
+
+  if (any(is.na(mass_num) & !is.na(df_no_na$mass..g.))) {
+    stop("`mass..g.` contains values that cannot be converted to numeric.", call. = FALSE)
+  }
+  
+  if (any(is.na(year_num) & !is.na(df_no_na$year))) {
+    stop("`year` contains values that cannot be converted to numeric.", call. = FALSE)
+  }
+
+  if (any(is.na(reclat_num) & !is.na(df_no_na$reclat))) {
+    stop("`reclat` contains values that cannot be converted to numeric.", call. = FALSE)
+  }
+
+  if (any(is.na(reclong_num) & !is.na(df_no_na$reclong))) {
+    stop("`reclong` contains values that cannot be converted to numeric.", call. = FALSE)
+  }
+
+ df_no_na %>%
     dplyr::mutate(
-      mass = as.numeric(mass..g.),
-      year = as.numeric(year),
-      reclat = as.numeric(reclat),
-      reclong = as.numeric(reclong)
+      mass = mass_num,
+      year = year_num,
+      reclat = reclat_num,
+      reclong = reclong_num
     ) %>%
-    tidyr::drop_na(mass, year, reclat, reclong) %>%
     dplyr::filter(mass > 0) %>%
     dplyr::mutate(
       log_mass = log10(mass),
@@ -38,7 +72,18 @@ clean_meteorite_data <- function(df) {
 #'
 #' @return A filtered dataframe containing only rows whose recclass is among
 #' the top n most common classes.
+
 filter_top_classes <- function(df, n = 5) {
+  if (!is.data.frame(df)) {
+    stop("`df` must be a data frame.", call. = FALSE)
+  } 
+  if (!"recclass" %in% names(df)) {
+    stop("`df` must contain a `recclass` column.", call. = FALSE)
+  }
+  if (!is.numeric(n) || length(n) != 1 || is.na(n) || n <= 0 || n != as.integer(n)) {
+    stop("`n` must be a single positive integer.", call. = FALSE)
+  }
+
   top_classes <- df %>%
     dplyr::count(recclass, sort = TRUE) %>%
     dplyr::slice_head(n = n) %>%
@@ -47,3 +92,5 @@ filter_top_classes <- function(df, n = 5) {
   df %>%
     dplyr::filter(recclass %in% top_classes)
 }
+
+
