@@ -1,20 +1,18 @@
-#' Clean meteorite data
+#' Validate required meteorite columns
 #'
-#' Takes a raw meteorite dataframe and cleans it by removing rows with
-#' missing required values, converting selected columns to numeric,
-#' filtering out non-positive masses, and creating transformed columns.
+#' Checks that the input is a data frame and contains all required columns.
 #'
-#' @param df A dataframe containing raw meteorite data.
+#' @param df A data frame containing raw meteorite data.
 #'
-#' @return A cleaned dataframe with numeric mass, year, reclat, and reclong
-#' columns, a log_mass column, and factor fall and recclass columns.
-
-clean_meteorite_data <- function(df) {
+#' @return The input data frame invisibly if valid.
+validate_meteorite_columns <- function(df) {
   if (!is.data.frame(df)) {
     stop("`df` must be a data frame.", call. = FALSE)
   }
+
   required_cols <- c("mass..g.", "year", "reclat", "reclong", "fall", "recclass")
   missing_cols <- setdiff(required_cols, names(df))
+
   if (length(missing_cols) > 0) {
     stop(
       paste("Missing required columns:", paste(missing_cols, collapse = ", ")),
@@ -22,38 +20,132 @@ clean_meteorite_data <- function(df) {
     )
   }
 
-  df_no_na <- df %>%
+  invisible(df)
+}
+
+#' Filter valid meteorite rows
+#'
+#' Removes rows with missing required values.
+#'
+#' @param df A data frame containing raw meteorite data.
+#'
+#' @return A data frame with rows containing complete required values.
+filter_valid_meteorite_rows <- function(df) {
+  df %>%
     tidyr::drop_na(mass..g., year, reclat, reclong, fall, recclass)
+}
 
-    mass_num <- suppressWarnings(as.numeric(df_no_na$mass..g.))
-    year_num <- suppressWarnings(as.numeric(df_no_na$year))
-    reclat_num <- suppressWarnings(as.numeric(df_no_na$reclat))
-    reclong_num <- suppressWarnings(as.numeric(df_no_na$reclong)) 
 
-  if (any(is.na(mass_num) & !is.na(df_no_na$mass..g.))) {
+#' Convert meteorite columns to numeric
+#'
+#' Converts selected columns to numeric and throws an error if conversion fails.
+#'
+#' @param df A data frame containing meteorite data.
+#'
+#' @return A data frame with numeric `mass`, `year`, `reclat`, and `reclong` columns.
+convert_meteorite_numeric <- function(df) {
+  mass_num <- suppressWarnings(as.numeric(df$mass..g.))
+  year_num <- suppressWarnings(as.numeric(df$year))
+  reclat_num <- suppressWarnings(as.numeric(df$reclat))
+  reclong_num <- suppressWarnings(as.numeric(df$reclong))
+
+  if (any(is.na(mass_num) & !is.na(df$mass..g.))) {
     stop("`mass..g.` contains values that cannot be converted to numeric.", call. = FALSE)
   }
-  
-  if (any(is.na(year_num) & !is.na(df_no_na$year))) {
+
+  if (any(is.na(year_num) & !is.na(df$year))) {
     stop("`year` contains values that cannot be converted to numeric.", call. = FALSE)
   }
 
-  if (any(is.na(reclat_num) & !is.na(df_no_na$reclat))) {
+  if (any(is.na(reclat_num) & !is.na(df$reclat))) {
     stop("`reclat` contains values that cannot be converted to numeric.", call. = FALSE)
   }
 
-  if (any(is.na(reclong_num) & !is.na(df_no_na$reclong))) {
+  if (any(is.na(reclong_num) & !is.na(df$reclong))) {
     stop("`reclong` contains values that cannot be converted to numeric.", call. = FALSE)
   }
 
- df_no_na %>%
+  df %>%
     dplyr::mutate(
       mass = mass_num,
       year = year_num,
       reclat = reclat_num,
       reclong = reclong_num
-    ) %>%
-    dplyr::filter(mass > 0) %>%
+    )
+}
+
+#' Filter meteorites with positive mass
+#'
+#' Keeps only rows with positive mass values.
+#'
+#' @param df A data frame containing a numeric `mass` column.
+#'
+#' @return A data frame containing only rows with `mass > 0`.
+filter_positive_mass <- function(df) {
+  df %>%
+    dplyr::filter(mass > 0)
+}
+
+
+#' Convert meteorite columns to numeric
+#'
+#' Converts selected columns to numeric and throws an error if conversion fails.
+#'
+#' @param df A data frame containing meteorite data.
+#'
+#' @return A data frame with numeric `mass`, `year`, `reclat`, and `reclong` columns.
+convert_meteorite_numeric <- function(df) {
+  mass_num <- suppressWarnings(as.numeric(df$mass..g.))
+  year_num <- suppressWarnings(as.numeric(df$year))
+  reclat_num <- suppressWarnings(as.numeric(df$reclat))
+  reclong_num <- suppressWarnings(as.numeric(df$reclong))
+
+  if (any(is.na(mass_num) & !is.na(df$mass..g.))) {
+    stop("`mass..g.` contains values that cannot be converted to numeric.", call. = FALSE)
+  }
+
+  if (any(is.na(year_num) & !is.na(df$year))) {
+    stop("`year` contains values that cannot be converted to numeric.", call. = FALSE)
+  }
+
+  if (any(is.na(reclat_num) & !is.na(df$reclat))) {
+    stop("`reclat` contains values that cannot be converted to numeric.", call. = FALSE)
+  }
+
+  if (any(is.na(reclong_num) & !is.na(df$reclong))) {
+    stop("`reclong` contains values that cannot be converted to numeric.", call. = FALSE)
+  }
+
+  df %>%
+    dplyr::mutate(
+      mass = mass_num,
+      year = year_num,
+      reclat = reclat_num,
+      reclong = reclong_num
+    )
+}
+
+#' Filter meteorites with positive mass
+#'
+#' Keeps only rows with positive mass values.
+#'
+#' @param df A data frame containing a numeric `mass` column.
+#'
+#' @return A data frame containing only rows with `mass > 0`.
+filter_positive_mass <- function(df) {
+  df %>%
+    dplyr::filter(mass > 0)
+}
+
+#' Add transformed meteorite columns
+#'
+#' Creates `log_mass` and converts `fall` and `recclass` to factors.
+#'
+#' @param df A data frame containing meteorite data with numeric `mass`.
+#'
+#' @return A data frame with `log_mass` added and factor `fall` and `recclass`.
+add_meteorite_transforms <- function(df) {
+  df %>%
     dplyr::mutate(
       log_mass = log10(mass),
       fall = as.factor(fall),
