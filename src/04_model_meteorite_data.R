@@ -1,4 +1,12 @@
 #!/usr/bin/env Rscript
+# Model meteorite landing data using generalized linear regression
+#
+# This script:
+# 1. Reads cleaned meteorite data
+# 2. Splits data into training and testing sets  
+# 3. Fits a GLM model using the training data
+# 4. Generates predictions on a grid of years and meteorite classes
+# 5. Creates visualizations of model results
 
 library(docopt)
 library(rsample)
@@ -20,15 +28,15 @@ args <- docopt(doc)
 
 set.seed(42)
 
+# Load data and ensure proper data types
 meteors_clean <- read.csv(args$input)
 meteors_clean$fall <- as.factor(meteors_clean$fall)
 meteors_clean$recclass <- as.factor(meteors_clean$recclass)
 
-# Assume model, test_data, and top_classes are created earlier in pipeline
-# Predictions
-
+# Generate a sequence of years for prediction grid
 year_seq <- seq(min(meteors_clean$year), max(meteors_clean$year), length.out = 100)
 
+# Filter to top 5 meteorite classes for model focus
 top_classes <- meteors_clean %>%
   count(recclass, sort = TRUE) %>%
   slice_head(n = 5) %>%
@@ -37,14 +45,18 @@ top_classes <- meteors_clean %>%
 meteors_clean <- meteors_clean %>%
   filter(recclass %in% top_classes)
 
-
+# Train-test split (80-20 split)
 split_obj <- initial_split(meteors_clean, prop = 0.8)
 train_data <- training(split_obj)
 test_data  <- testing(split_obj)
 
+# Fit the GLM model
 model <- fit_meteorite_model(train_data)
 
+# Generate predictions on test data
 predictions <- predict(model, newdata = test_data)
+
+# Create prediction grid for visualization
 prediction_grid <- expand.grid(
   year = year_seq,
   reclat = mean(meteors_clean$reclat),
@@ -55,6 +67,7 @@ prediction_grid <- expand.grid(
 
 prediction_grid$pred_log_mass <- predict(model, newdata = prediction_grid)
 
+# Plot 1: Regression lines by meteorite class
 options(repr.plot.width = 12, repr.plot.height = 5)
 
 plot_classes <- ggplot(meteors_clean, aes(x = year, y = log_mass, color = recclass)) +
@@ -74,6 +87,7 @@ plot_classes <- ggplot(meteors_clean, aes(x = year, y = log_mass, color = reccla
 dir.create(dirname(paste0(args$output, "_regression_lines.png")), recursive = TRUE, showWarnings = FALSE)
 ggsave(paste0(args$output, "_regression_lines.png"), plot = plot_classes)
 
+# Plot 2: Predicted vs Actual values
 options(repr.plot.width = 12, repr.plot.height = 5)
 
 plot_pred_vs_act <- ggplot(test_data, aes(x = log_mass, y = predictions)) +
