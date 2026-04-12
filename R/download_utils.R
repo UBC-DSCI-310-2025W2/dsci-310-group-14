@@ -23,7 +23,7 @@ ensure_dir <- function(path) {
 }
 
 
-#' Download a file from a URL or copy from a local path
+#' Download a file from a URL.
 #'
 #' If `input` begins with `"http://"` or `"https://"`, the file is
 #'   downloaded using `download.file()`.
@@ -38,12 +38,12 @@ ensure_dir <- function(path) {
 #' @examples
 #' \dontrun{
 #' ensure_dir("data/raw")
-#' download_url_copy(
+#' download_from_url(
 #'   input  = "https://data.nasa.gov/docs/legacy/meteorite_landings/Meteorite_Landings.csv",
 #'   output = "data/raw/meteorite_landings.csv"
 #' )
 #' }
-download_url_copy <- function(input, output) {
+download_from_url <- function(input, output) {
 
   if (!is.character(input) || length(input) != 1 || is.na(input) || nchar(input) == 0) {
     stop("`input` must be a single, non-empty character string.")
@@ -76,8 +76,9 @@ download_url_copy <- function(input, output) {
     return(invisible(NULL))
 
   }
-
-  if (!file.exists(input)) {
+  
+  # To check if file downloaded successfully
+  if (!file.exists(input) || file.info(input)$size == 0) {
     stop(paste0("Source file does not exist: '", input, "'."))
   }
 }
@@ -95,7 +96,7 @@ download_url_copy <- function(input, output) {
 #' @param output A non-empty character string specifying the local file path
 #' where the data will be saved.
 #'
-#' @return The `output` path.
+#' @return Called for its side effect. Returns `NULL` invisibly.
 #'
 #' @examples
 #' \dontrun{
@@ -112,5 +113,6 @@ fetch_data <- function(input, output) {
     stop("`output` must be a single, non-empty character string.")
   }
   ensure_dir(dirname(output))
-  download_url_copy(input, output)
+  download_from_url(input, output)
+  invisible(NULL)
 }

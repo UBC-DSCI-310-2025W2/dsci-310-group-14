@@ -46,42 +46,42 @@ test_that("ensure_dir does not error when the directory already exists", {
   expect_no_error(ensure_dir(tempdir()))
 })
 
-test_that("download_url_copy errors when input is not a character", {
-  expect_error(download_url_copy(123,  tempfile()), "`input` must be a single, non-empty character string.")
-  expect_error(download_url_copy(NULL, tempfile()), "`input` must be a single, non-empty character string.")
+test_that("download_from_url errors when input is not a character", {
+  expect_error(download_from_url(123,  tempfile()), "`input` must be a single, non-empty character string.")
+  expect_error(download_from_url(NULL, tempfile()), "`input` must be a single, non-empty character string.")
 })
 
-test_that("download_url_copy errors when input is NA", {
-  expect_error(download_url_copy(NA_character_, tempfile()),
+test_that("download_from_url errors when input is NA", {
+  expect_error(download_from_url(NA_character_, tempfile()),
                "`input` must be a single, non-empty character string.")
 })
 
-test_that("download_url_copy errors when input is an empty string", {
-  expect_error(download_url_copy("", tempfile()),
+test_that("download_from_url errors when input is an empty string", {
+  expect_error(download_from_url("", tempfile()),
                "`input` must be a single, non-empty character string.")
 })
 
-test_that("download_url_copy errors when output is not a character", {
-  expect_error(download_url_copy("https://example.com", 123),
+test_that("download_from_url errors when output is not a character", {
+  expect_error(download_from_url("https://example.com", 123),
                "`output` must be a single, non-empty character string.")
 })
 
-test_that("download_url_copy errors when output is NA", {
-  expect_error(download_url_copy("https://example.com", NA_character_),
+test_that("download_from_url errors when output is NA", {
+  expect_error(download_from_url("https://example.com", NA_character_),
                "`output` must be a single, non-empty character string.")
 })
 
-test_that("download_url_copy errors when output is an empty string", {
-  expect_error(download_url_copy("https://example.com", ""),
+test_that("download_from_url errors when output is an empty string", {
+  expect_error(download_from_url("https://example.com", ""),
                "`output` must be a single, non-empty character string.")
 })
 
-test_that("download_url_copy downloads a remote URL to disk", {
+test_that("download_from_url downloads a remote URL to disk", {
   skip_if_offline()
   dst <- tempfile(fileext = ".md")
   on.exit(unlink(dst), add = TRUE)
   
-  download_url_copy(
+  download_from_url(
     input  = "https://raw.githubusercontent.com/tidyverse/ggplot2/main/NEWS.md",
     output = dst
   )

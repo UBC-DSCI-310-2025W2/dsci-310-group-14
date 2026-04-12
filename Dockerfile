@@ -31,4 +31,5 @@ COPY --chown=rstudio:rstudio Makefile Makefile
 COPY --chown=rstudio:rstudio README.md README.md
 COPY --chown=rstudio:rstudio QuartoDSCIProject.qmd QuartoDSCIProject.qmd
 COPY --chown=rstudio:rstudio references.bib references.bib
+COPY --chown=rstudio:rstudio tests/ tests/
 COPY --chown=rstudio:rstudio R/ R/
