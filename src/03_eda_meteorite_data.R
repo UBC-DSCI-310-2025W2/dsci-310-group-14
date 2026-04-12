@@ -2,8 +2,7 @@
 
 library(docopt)
 library(ggplot2)
-
-source("R/eda_function.R")
+library(meteoriteutils)
 
 doc <- "
 Usage:
