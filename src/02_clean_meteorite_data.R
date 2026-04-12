@@ -2,8 +2,7 @@
 library(docopt)
 library(tidyverse)
 
-source("R/clean_meteorite_functions.R")
-
+library(meteoriteutils)
 doc <- "
 Usage:
   02_clean_meteorite_data.R --input=<input> --output=<output>

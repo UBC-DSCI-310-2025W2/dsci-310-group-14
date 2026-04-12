@@ -2,8 +2,7 @@
 library(docopt)
 library(here)
 
-source(here("R", "download_utils.R"))
-
+library(meteoriteutils)
 doc <- "
 Usage:
   01_download_meteorite_data.R --input=<input> --output=<output>

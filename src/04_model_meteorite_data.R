@@ -12,8 +12,7 @@ library(docopt)
 library(rsample)
 library(ggplot2)
 library(tidyverse)
-
-source("R/meteorite_functions.R")
+library(meteoriteutils)
 
 doc <- "
 Usage:
