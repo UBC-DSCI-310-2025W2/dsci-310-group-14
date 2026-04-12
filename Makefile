@@ -1,8 +1,5 @@
 # Run the full analysis pipeline
-all: results/model/meteorite_model_regression_lines.png \
-     results/model/meteorite_model_pred_vs_actual.png \
-     results/eda/meteorite_eda_eda_plot.png \
-     QuartoDSCIProject.html
+all: QuartoDSCIProject.html
 
 
 # Download raw data
