@@ -17,8 +17,13 @@ args <- docopt(doc)
 
 meteors <- read.csv(args$input)
 
+validate_meteorite_columns(meteors)
+
 meteors_clean <- meteors %>%
-  clean_meteorite_data() %>%
+  filter_valid_meteorite_rows() %>%
+  convert_meteorite_numeric() %>%
+  filter_positive_mass() %>%
+  add_meteorite_transforms() %>%
   filter_top_classes(n = 5)
 
 dir.create(dirname(args$output), recursive = TRUE, showWarnings = FALSE)
