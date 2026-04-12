@@ -20,6 +20,7 @@ validate_meteorite_columns(meteors)
 
 meteors_clean <- meteors %>%
   filter_valid_meteorite_rows() %>%
+  remove_duplicate_rows() %>%
   convert_meteorite_numeric() %>%
   filter_positive_mass() %>%
   add_meteorite_transforms() %>%

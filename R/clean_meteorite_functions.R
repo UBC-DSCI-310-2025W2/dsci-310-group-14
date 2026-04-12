@@ -186,3 +186,19 @@ filter_top_classes <- function(df, n = 5) {
 }
 
 
+#' Remove duplicate rows
+remove_duplicate_rows <- function(df) {
+  df %>%
+    dplyr::distinct()
+}
+
+#' Check missingness threshold
+check_missingness <- function(df, threshold = 0.2) {
+  missing_prop <- colMeans(is.na(df))
+
+  if (any(missing_prop > threshold)) {
+    stop("Missingness exceeds threshold in one or more columns.", call. = FALSE)
+  }
+
+  invisible(df)
+}
