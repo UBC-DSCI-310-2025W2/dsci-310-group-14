@@ -228,3 +228,20 @@ test_that("filter_top_classes errors if n is invalid", {
     "`n` must be a single positive integer."
   )
 })
+
+test_that("remove_duplicate_rows removes duplicates", {
+  df <- tibble(x = c(1, 1, 2))
+
+  result <- remove_duplicate_rows(df)
+
+  expect_equal(nrow(result), 2)
+})
+
+test_that("check_missingness errors when threshold exceeded", {
+  df <- tibble(x = c(1, NA, NA))
+
+  expect_error(
+    check_missingness(df, threshold = 0.5),
+    "Missingness exceeds threshold"
+  )
+})
